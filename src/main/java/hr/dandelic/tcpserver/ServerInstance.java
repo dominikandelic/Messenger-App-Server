@@ -13,6 +13,7 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 
 /**
  *
@@ -23,8 +24,6 @@ public class ServerInstance implements Runnable {
     private final Socket client;
     private PrintWriter out;
     private BufferedReader in;
-    private String clientUsername;
-    private String clientId;
 
     public ServerInstance(Socket client) {
         this.client = client;
@@ -44,7 +43,7 @@ public class ServerInstance implements Runnable {
                     System.out.println("Error while closing streams.");
                 }
             }));
-            clientId = Integer.toString(++Server.idCounter);
+            String clientId = Integer.toString(++Server.idCounter);
             in = new BufferedReader(new InputStreamReader(client.getInputStream()));
             out = new PrintWriter(new OutputStreamWriter(client.getOutputStream()), true);
             if (!in.readLine().contentEquals("handshake")) {
@@ -53,6 +52,7 @@ public class ServerInstance implements Runnable {
 
             // Notify client of ID, wait for the stream pipeline to have some input
             out.println(clientId);
+            String clientUsername;
             while (true) {
                 if (in.ready()) {
                     clientUsername = in.readLine();
@@ -128,9 +128,7 @@ public class ServerInstance implements Runnable {
             for (String censoredWord : Server.curseWords) {
                 if (splitLineArray[i].equalsIgnoreCase(censoredWord)) {
                     char[] censoredCharArray = new char[splitLineArray[i].length()];
-                    for (int j = 0; j < censoredCharArray.length; j++) {
-                        censoredCharArray[j] = '*';
-                    }
+                    Arrays.fill(censoredCharArray, '*');
                     splitLineArray[i] = new String(censoredCharArray);
                 }
             }

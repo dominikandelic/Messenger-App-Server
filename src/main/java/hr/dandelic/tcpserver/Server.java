@@ -12,6 +12,7 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Objects;
 
 /**
  *
@@ -31,18 +32,16 @@ public class Server {
             activeSockets = new ArrayList<>();
             activeUsers = new ArrayList<>();
 
-            Runtime.getRuntime().addShutdownHook(new Thread() {
-                @Override
-                public void run() {
-                    System.out.println("Shutting down...");
-                    if (serverSocket != null) {
-                        try {
-                            serverSocket.close();
-                        } catch (IOException e) {
-                        }
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                System.out.println("Shutting down...");
+                if (serverSocket != null) {
+                    try {
+                        serverSocket.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
                 }
-            });
+            }));
 
             server.start("localhost", 25555);
 
@@ -55,6 +54,7 @@ public class Server {
                 new Thread(new ServerInstance(socket)).start();
             }
         } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -82,12 +82,13 @@ public class Server {
     }
 
     public void addCurseWords() throws IOException {
-        try (InputStream in = getClass().getResourceAsStream("/curseWords.txt"); BufferedReader reader = new BufferedReader(new InputStreamReader(in))) {
+        try (InputStream in = getClass().getResourceAsStream("/curseWords.txt"); BufferedReader reader = new BufferedReader(new InputStreamReader(Objects.requireNonNull(in)))) {
             String curseWord;
             while ((curseWord = reader.readLine()) != null) {
                 curseWords.add(curseWord);
             }
         } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
